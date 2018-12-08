@@ -1,28 +1,42 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-
+import io from 'socket.io-client';
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+   state = {
+      response: [],
+      endpoint: 'http://localhost:3000/'
+   };
+   socket= null;
+
+   componentDidMount() {
+      const { endpoint } = this.state;
+      this.socket = io(endpoint);
+      this.socket.on('sendMes', data =>
+         this.setState(prevState => ({
+            response: [...prevState.response, data.name]
+         }))
+      );
+      this.forceUpdate();
+   }
+
+   sendMessage = () => {
+      this.socket.emit('sayHey', { name: 'john', age: 31 });
+   };
+
+   render() {
+      const { response } = this.state;
+      console.log(response);
+      return (
+         <div className="App">
+            <h1>HEYY</h1>
+            <button onClick={this.sendMessage}>Send</button>
+            {response.length > 0 ? (
+               response.map((item, key) => <p key={key}>Hello: {item}</p>)
+            ) : (
+               <p>Loading...</p>
+            )}
+         </div>
+      );
+   }
 }
 
 export default App;

@@ -1,25 +1,28 @@
 import React, { Component } from 'react';
 import io from 'socket.io-client';
 class App extends Component {
-   state = {
-      response: [],
-      endpoint: 'http://localhost:3000/'
-   };
-   socket= null;
+   constructor(props) {
+      super(props);
+      this.state = {
+         response: [],
+         endpoint: 'http://localhost:3000/',
+         socket: null,
+         msg: null
+      };
+   }
 
-   componentDidMount() {
-      const { endpoint } = this.state;
-      this.socket = io(endpoint);
-      this.socket.on('sendMes', data =>
+   async componentDidMount() {
+      await this.setState({ socket: io(this.state.endpoint) });
+
+      this.state.socket.on('getMsg', data =>
          this.setState(prevState => ({
-            response: [...prevState.response, data.name]
+            response: [...prevState.response, data.msg]
          }))
       );
-      this.forceUpdate();
    }
 
    sendMessage = () => {
-      this.socket.emit('sayHey', { name: 'john', age: 31 });
+      this.state.socket.emit('sendMsg', { msg: this.state.msg });
    };
 
    render() {
@@ -27,8 +30,12 @@ class App extends Component {
       console.log(response);
       return (
          <div className="App">
-            <h1>HEYY</h1>
+            <input
+               name="msg"
+               onChange={e => this.setState({ msg: e.target.value })}
+            />
             <button onClick={this.sendMessage}>Send</button>
+            <br />
             {response.length > 0 ? (
                response.map((item, key) => <p key={key}>Hello: {item}</p>)
             ) : (
